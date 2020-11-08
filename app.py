@@ -18,6 +18,10 @@ from resources.user_resources import (
     UserCollectionResource,
     UserResource
 )
+from resources.shoes_resources import (
+    ShoesCollectionResource,
+    ShoesResource
+)
 
 load_dotenv()
 
@@ -56,8 +60,8 @@ def register_resources(app):
     api.add_resource(UserCollectionResource, '/users')
     api.add_resource(UserResource, '/users/<string:user_id>')
     
-    # api.add_resources(ShoesCollectionResource, '/shoes')
-    # api.add_resource(ShoesResource, '/shoes/<string:shoes_id>')
+    api.add_resource(ShoesCollectionResource, '/shoes')
+    api.add_resource(ShoesResource, '/shoes/<string:shoes_id>')
 
 if __name__ == "__main__": # sudo lsof -i:5000
     app = create_app()

@@ -2,7 +2,6 @@ import json
 
 from flask import request, jsonify
 from flask_restful import Resource
-from flask_login import logout_user, login_required
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from http import HTTPStatus

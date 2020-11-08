@@ -1,4 +1,3 @@
-from flask_login import LoginManager
 from flask_session import Session
 from flask_jwt_extended import JWTManager
 

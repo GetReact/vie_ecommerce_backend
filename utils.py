@@ -1,7 +1,6 @@
 import json
 
 from flask import current_app, session
-from flask_login import login_required
 from bson.json_util import dumps
 
 from passlib.hash import pbkdf2_sha256
