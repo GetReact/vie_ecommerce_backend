@@ -9,6 +9,7 @@ class StripeResource(Resource): # /payment
     def post(self):
         try:
             json_data = request.get_json()
+            print(json_data['token']['id'])
             response = stripe.Charge.create(
                 amount=json_data['amount'],
                 currency='usd',
