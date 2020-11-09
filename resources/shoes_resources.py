@@ -26,7 +26,6 @@ class ShoesCollectionResource(Resource): # /shoes
                     }
                 ).inserted_id
             
-            print(shoes_collection_doc_id)
             new_item_id = str(uuid.uuid4().int)
 
             shoes_collection_doc = db['shop_data'].update_one(
