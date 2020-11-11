@@ -1,5 +1,10 @@
-from flask import Flask
+from http import HTTPStatus
+from flask import Flask, redirect, make_response
 from flask_restful import Api
+from flask_jwt_extended import (
+    unset_access_cookies,
+    unset_jwt_cookies
+)
 
 import os
 from dotenv import load_dotenv
@@ -10,9 +15,7 @@ from extensions import sess, jwt, cors
 from resources.token_resources import (
     TokenResource,
     RefreshToken,
-    RevokeResource,
-    RevokeRefreshResource,
-    black_list
+    RevokeResource
 )
 from resources.user_resources import (
     UserCollectionResource,
@@ -47,18 +50,33 @@ def register_extensions(app):
     sess.init_app(app)
 
     jwt.init_app(app)
-    @jwt.token_in_blacklist_loader
-    def check_if_token_in_blacklist(decrypted_token):
-        jti = decrypted_token['jti']
-        return jti in black_list
+
+    @jwt.unauthorized_loader
+    def unauthorized_callback(callback):
+        # No auth header
+        resp = make_response(redirect(app.config['BASE_URL'] + '/signin', HTTPStatus.FOUND))
+        return resp
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(callback):
+        # Invalid Fresh/Non-Fresh Access token in auth header
+        resp = make_response(redirect(app.config['BASE_URL'] + '/signin', HTTPStatus.FOUND))
+        unset_jwt_cookies(resp)
+        return resp
+
+    @jwt.expired_token_loader
+    def expired_token_callback(callback):
+        # Expired auth header
+        resp = make_response(redirect(app.config['BASE_URL'] + '/token/refresh', HTTPStatus.FOUND))
+        unset_access_cookies(resp)
+        return resp
 
 def register_resources(app):
     api = Api(app)
 
     api.add_resource(TokenResource, '/signin')
-    api.add_resource(RefreshToken, '/refresh')
-    api.add_resource(RevokeResource, '/revoke/access')
-    api.add_resource(RevokeRefreshResource, '/revoke/refresh')
+    api.add_resource(RefreshToken, '/token/refresh')
+    api.add_resource(RevokeResource, '/signout')
 
     api.add_resource(UserCollectionResource, '/users')
     api.add_resource(UserResource, '/users/<string:user_id>')

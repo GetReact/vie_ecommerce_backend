@@ -41,13 +41,10 @@ class UserCollectionResource(Resource):
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
-class UserResource(Resource):
     @jwt_required
-    def get(self, user_id):
+    def get(self):
         try:
             print(get_jwt_identity())
-            if (user_id != get_jwt_identity()):
-                return {'error' : 'access not allowed'}, HTTPStatus.FORBIDDEN
 
             user = db['users'].find_one({ '_id' : get_jwt_identity() })
             user_json = json.dumps(user)
@@ -70,6 +67,7 @@ class UserResource(Resource):
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
+class UserResource(Resource):
     @jwt_required
     def patch(self, user_id):
         try:
