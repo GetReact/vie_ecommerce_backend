@@ -5,7 +5,6 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from http import HTTPStatus
-from bson.json_util import dumps
 import uuid
 
 from extensions import db
@@ -41,10 +40,11 @@ class UserCollectionResource(Resource):
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
+class MeResource(Resource):
     @jwt_required
     def get(self):
         try:
-            print(get_jwt_identity())
+            # print(get_jwt_identity())
 
             user = db['users'].find_one({ '_id' : get_jwt_identity() })
             user_json = json.dumps(user)
@@ -52,7 +52,7 @@ class UserCollectionResource(Resource):
             if not user_json:
                 return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
 
-            print(json.loads(user_json))
+            # print(json.loads(user_json))
 
             return {
                 'currentUser' : {
@@ -67,13 +67,9 @@ class UserCollectionResource(Resource):
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
-class UserResource(Resource):
     @jwt_required
-    def patch(self, user_id):
+    def patch(self):
         try:
-            if (user_id != get_jwt_identity()):
-                return {'error' : 'access not allowed'}, HTTPStatus.FORBIDDEN
-
             if not db['users'].find_one({ '_id' : get_jwt_identity() }):
                 return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
             

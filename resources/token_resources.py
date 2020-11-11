@@ -1,5 +1,5 @@
 import json
-from flask_jwt_extended.utils import unset_access_cookies
+from datetime import timedelta
 
 from flask_restful import Resource
 from flask import request, make_response
@@ -9,10 +9,11 @@ from flask_jwt_extended import (
     set_access_cookies, 
     set_refresh_cookies, 
     unset_jwt_cookies,
+    unset_access_cookies,
     jwt_refresh_token_required,
+    verify_jwt_refresh_token_in_request,
     jwt_required,
-    get_jwt_identity,
-    get_raw_jwt
+    get_jwt_identity
 )
 
 from http import HTTPStatus
@@ -49,15 +50,15 @@ class TokenResource(Resource): # /signin
                 'is_active' : user_json['is_active']
             }
 
-            access_token = create_access_token(identity=user_json['_id'], fresh=True)
-            refresh_token = create_refresh_token(identity=user_json['_id'])
+            access_token = create_access_token(identity=user_json['_id'], fresh=True, expires_delta=timedelta(seconds=10))
+            refresh_token = create_refresh_token(identity=user_json['_id'], expires_delta=timedelta(seconds=1*60))
             
             resp = make_response(
                 {
                     'currentUser' : currentUser,
                 }, HTTPStatus.OK    
             )
-
+            
             set_access_cookies(response=resp, encoded_access_token=access_token)
             set_refresh_cookies(response=resp, encoded_refresh_token=refresh_token)
 
@@ -68,7 +69,7 @@ class TokenResource(Resource): # /signin
                 'error': e
             }, HTTPStatus.BAD_REQUEST
 
-class RevokeResource(Resource): # /revoke/access
+class RevokeResource(Resource): # /signout
     @jwt_required
     def post(self):
         try:
@@ -84,10 +85,16 @@ class RevokeResource(Resource): # /revoke/access
 
 class RefreshToken(Resource):
     @jwt_refresh_token_required
-    def post(self):
+    def get(self):
         try:
-            return {
-                'access_token' : create_access_token(identity=get_jwt_identity(), fresh=False)
-            }, HTTPStatus.OK
+            print(request.headers)
+            print(get_jwt_identity())
+            access_token = create_access_token(identity=get_jwt_identity(), fresh=False, expires_delta=timedelta(seconds=10))
+            resp = make_response({
+                'new_access_token': access_token
+            }, HTTPStatus.OK)
+            set_access_cookies(response=resp, encoded_access_token=access_token)
+            return resp
         except Exception as e:
-            return {'error': e}, HTTPStatus.BAD_REQUEST
+            print(e)
+            # return {'error': e}, HTTPStatus.BAD_REQUEST

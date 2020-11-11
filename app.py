@@ -1,5 +1,6 @@
 from http import HTTPStatus
-from flask import Flask, redirect, make_response
+from flask import Flask, redirect, make_response, request
+from flask.helpers import url_for
 from flask_restful import Api
 from flask_jwt_extended import (
     unset_access_cookies,
@@ -19,7 +20,7 @@ from resources.token_resources import (
 )
 from resources.user_resources import (
     UserCollectionResource,
-    UserResource
+    MeResource
 )
 from resources.shoes_resources import (
     ShoesCollectionResource,
@@ -42,6 +43,10 @@ def create_app():
     def index():
         return {"message" : "this is the home page!"}
 
+    @app.before_request
+    def before_request():
+        print(request.cookies)
+    
     return app
 
 def register_extensions(app):
@@ -54,20 +59,28 @@ def register_extensions(app):
     @jwt.unauthorized_loader
     def unauthorized_callback(callback):
         # No auth header
-        resp = make_response(redirect(app.config['BASE_URL'] + '/signin', HTTPStatus.FOUND))
+        print(callback)
+        resp = make_response(
+            {
+                'message': callback
+            }, HTTPStatus.UNAUTHORIZED
+        )
         return resp
 
     @jwt.invalid_token_loader
     def invalid_token_callback(callback):
         # Invalid Fresh/Non-Fresh Access token in auth header
-        resp = make_response(redirect(app.config['BASE_URL'] + '/signin', HTTPStatus.FOUND))
+        print(callback)
+        resp = make_response({
+            'message': callback
+        }, HTTPStatus.UNAUTHORIZED)
         unset_jwt_cookies(resp)
         return resp
 
     @jwt.expired_token_loader
-    def expired_token_callback(callback):
+    def expired_token_callback(expired_token):
         # Expired auth header
-        resp = make_response(redirect(app.config['BASE_URL'] + '/token/refresh', HTTPStatus.FOUND))
+        resp = make_response(redirect(url_for('refreshtoken'), HTTPStatus.FOUND))
         unset_access_cookies(resp)
         return resp
 
@@ -75,11 +88,11 @@ def register_resources(app):
     api = Api(app)
 
     api.add_resource(TokenResource, '/signin')
-    api.add_resource(RefreshToken, '/token/refresh')
+    api.add_resource(RefreshToken, '/refresh')
     api.add_resource(RevokeResource, '/signout')
 
     api.add_resource(UserCollectionResource, '/users')
-    api.add_resource(UserResource, '/users/<string:user_id>')
+    api.add_resource(MeResource, '/me')
     
     api.add_resource(ShoesCollectionResource, '/shoes')
     api.add_resource(ShoesResource, '/shoes/<string:shoes_id>')
