@@ -6,8 +6,12 @@ from utils import hash_password
 from extensions import db, login_manager
 
 class User:
-    def __init__(self, displayName, email, password, _id=uuid.uuid4().hex, is_active=True, created_at=datetime.datetime.now()):
-        self.__id = _id
+    def __init__(
+        self, displayName, email, password, 
+        id=uuid.uuid4().hex, is_active=True, 
+        created_at=datetime.datetime.now()):
+
+        self.__id = id
         self.__displayName = displayName 
         self.__email = email
         self.__password = hash_password(password)

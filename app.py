@@ -8,19 +8,10 @@ from dotenv import load_dotenv
 from config import DevelopmentConfig
 from extensions import login_manager, cors
 
-from resources.token_resources import (
-    TokenResource,
-    RevokeResource
-)
-from resources.user_resources import (
-    UserCollectionResource,
-    MeResource
-)
-# from resources.shoes_resources import (
-#     ShoesCollectionResource,
-#     ShoesResource
-# )
-# from resources.stripe_resources import StripeResource
+from resources.token_resources import TokenResource, RevokeResource
+from resources.user_resources import UserCollectionResource, MeResource
+from resources.shoes_resources import ShoesCollectionResource, ShoesResource
+from resources.stripe_resources import StripeResource
 
 load_dotenv()
 
@@ -56,10 +47,10 @@ def register_resources(app):
     api.add_resource(UserCollectionResource, '/users')
     api.add_resource(MeResource, '/me')
     
-    # api.add_resource(ShoesCollectionResource, '/shoes')
-    # api.add_resource(ShoesResource, '/shoes/<string:shoes_id>')
+    api.add_resource(ShoesCollectionResource, '/shoes')
+    api.add_resource(ShoesResource, '/shoes/<string:shoes_id>')
 
-    # api.add_resource(StripeResource, '/payment')
+    api.add_resource(StripeResource, '/payment')
 
 if __name__ == "__main__": # sudo lsof -i:5000
     app = create_app()
