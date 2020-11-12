@@ -14,7 +14,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    BASE_URL = 'http://127.0.0.1:5000'
+    BASE_URL = os.environ['BASE_URL']
     CORS_ORIGINS = [
         'http://localhost:3000'
     ]

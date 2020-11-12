@@ -18,10 +18,7 @@ class StripeResource(Resource): # /payment
                 source=json_data['token']['id']
             )
 
-            return {
-                'status' : response['status'],
-                'response' : response
-            }, HTTPStatus.ACCEPTED
+            return { 'message' : response }, HTTPStatus.ACCEPTED
 
         except Exception as e:
-            return {'error': e}, HTTPStatus.BAD_REQUEST
+            return { 'error': e }, HTTPStatus.BAD_REQUEST

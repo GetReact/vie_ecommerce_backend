@@ -1,14 +1,18 @@
 import json
+import os
 
-from flask import request, g
+from flask import request, g, redirect
 from flask_restful import Resource
-from flask_login import login_required, current_user
+from flask_login import login_required
 
 from http import HTTPStatus
+from dotenv import load_dotenv
 
 from extensions import db
 
 from models.user import User
+
+load_dotenv()
 
 class UserCollectionResource(Resource):
     def post(self):
@@ -19,36 +23,33 @@ class UserCollectionResource(Resource):
                 db.create_collection('users')
             
             if db['users'].find_one({ 'email' : email }):
-                return {'message' : 'This Email has been registered already'}, HTTPStatus.BAD_REQUEST
+                return { 'error' : 'This Email has been registered already' }, HTTPStatus.BAD_REQUEST
         
-            user_id = User(**json_data).save()
+            _ = User(**json_data).save()
         
-            return {
-                'id' : user_id,
-                'status' : 'Successfully registered'
-            }, HTTPStatus.OK
+            return redirect(os.environ['BASE_URL']+'/signin', HTTPStatus.PERMANENT_REDIRECT)
+            # return { 'message' : 'Successfully registered' }, HTTPStatus.OK
             
         except Exception as e:
-            return {'error': e}, HTTPStatus.BAD_REQUEST
+            return { 'error': e }, HTTPStatus.BAD_REQUEST
 
 class MeResource(Resource):
     @login_required
     def get(self):
         try:
-            user = db['users'].find_one({ '_id' : g.user.get_id() })
-            user_json = json.dumps(user)
-            
-            if not user_json:
-                return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
+            print('login_required passed!')
+            user_json = db['users'].find_one({ '_id' : g.user.get_id() })
 
+            if not user_json:
+                return { 'error' : 'user not found' }, HTTPStatus.NOT_FOUND
+            
             return {
-                'currentUser' : {
-                    'id' : json.loads(user_json)['_id'],
-                    'displayName' : json.loads(user_json)['displayName'],
-                    'email' : json.loads(user_json)['email'],
-                    'is_active' : json.loads(user_json)['is_active']
+                'message' : {
+                    '_id' : user_json['_id'],
+                    'displayName' : user_json['displayName'],
+                    'email' : user_json['email'],
+                    'is_active' : user_json['is_active']
                 },
-                'status' : 'verified'
             }, HTTPStatus.OK
             
         except Exception as e:

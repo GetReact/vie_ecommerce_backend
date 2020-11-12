@@ -43,7 +43,7 @@ class ShoesCollectionResource(Resource): # /shoes
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
 
             shoes_collection_doc_json = json.loads(doc_encryped)
-            return { 'shoesCollection' : shoes_collection_doc_json }, HTTPStatus.OK
+            return { 'message' : shoes_collection_doc_json }, HTTPStatus.OK
             
         except Exception as e:
             return {'error' : e}, HTTPStatus.BAD_REQUEST
@@ -65,7 +65,7 @@ class ShoesResource(Resource):
             shoes = [item for item in items if item['_id'] == shoes_id ]
 
             if shoes:
-                return { 'item' : shoes }, HTTPStatus.OK
+                return { 'message' : shoes }, HTTPStatus.OK
             else:
                 return { 'error' : 'item not found' }, HTTPStatus.NOT_FOUND
         except Exception as e:
