@@ -1,100 +1,37 @@
-import json
 from datetime import timedelta
 
 from flask_restful import Resource
-from flask import request, make_response
-from flask_jwt_extended import (
-    create_access_token, 
-    create_refresh_token, 
-    set_access_cookies, 
-    set_refresh_cookies, 
-    unset_jwt_cookies,
-    unset_access_cookies,
-    jwt_refresh_token_required,
-    verify_jwt_refresh_token_in_request,
-    jwt_required,
-    get_jwt_identity
-)
+from flask import request, make_response, redirect
+from flask_login import login_user, logout_user, login_required
 
 from http import HTTPStatus
 
 from utils import check_password
 from extensions import db
 
+from models.user import User
 
 class TokenResource(Resource): # /signin
     def post(self):
-        try:
-            json_data = request.get_json()
+        json_data = request.get_json()
+        email = json_data.get('email')
+        password = json_data.get('password')
+        
+        user_json = db['users'].find_one({ 'email' : email })
 
-            email = json_data['email']
-            password = json_data['password']
-            
-            user = json.dumps(db['users'].find_one({ 'email' : email }))
-            user_json = json.loads(user)
+        if not user_json or not check_password(password, user_json['password']): 
+            return {'message' : 'email or password is incorrect'}, HTTPStatus.UNAUTHORIZED
 
-            if not user:
-                return {
-                    'error' : 'email address not found!'
-                }, HTTPStatus.NOT_FOUND
+        user = User(**user_json)        # {k:v for k,v in user_json.items() if k not in ['']}
+        login_user(user)
 
-            if not check_password(password, user_json['password']): 
-                return {
-                    'error' : 'email or password is incorrect'
-                }, HTTPStatus.UNAUTHORIZED
-
-            currentUser = {
-                'id' : user_json['_id'],
-                'displayName' : user_json['displayName'],
-                'email' : user_json['email'],
-                'is_active' : user_json['is_active']
-            }
-
-            access_token = create_access_token(identity=user_json['_id'], fresh=True, expires_delta=timedelta(seconds=10))
-            refresh_token = create_refresh_token(identity=user_json['_id'], expires_delta=timedelta(seconds=1*60))
-            
-            resp = make_response(
-                {
-                    'currentUser' : currentUser,
-                }, HTTPStatus.OK    
-            )
-            
-            set_access_cookies(response=resp, encoded_access_token=access_token)
-            set_refresh_cookies(response=resp, encoded_refresh_token=refresh_token)
-
-            return resp
-
-        except Exception as e:
-            return {
-                'error': e
-            }, HTTPStatus.BAD_REQUEST
+        return {'currentUser': user_json}, HTTPStatus.OK
 
 class RevokeResource(Resource): # /signout
-    @jwt_required
+    @login_required
     def post(self):
         try:
-            resp = make_response(
-                {
-                    'status': 'Successfully revoked access token'
-                }, HTTPStatus.OK
-            )
-            unset_jwt_cookies(resp)
-            return resp
+            logout_user()
+            return {'message' : 'Successfully logged out'}, HTTPStatus.OK
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
-
-class RefreshToken(Resource):
-    @jwt_refresh_token_required
-    def get(self):
-        try:
-            print(request.headers)
-            print(get_jwt_identity())
-            access_token = create_access_token(identity=get_jwt_identity(), fresh=False, expires_delta=timedelta(seconds=10))
-            resp = make_response({
-                'new_access_token': access_token
-            }, HTTPStatus.OK)
-            set_access_cookies(response=resp, encoded_access_token=access_token)
-            return resp
-        except Exception as e:
-            print(e)
-            # return {'error': e}, HTTPStatus.BAD_REQUEST
