@@ -9,6 +9,7 @@ from http import HTTPStatus
 from dotenv import load_dotenv
 
 from extensions import db
+from utils import hash_password
 
 from models.user import User
 
@@ -55,25 +56,23 @@ class MeResource(Resource):
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
-#     @jwt_required
-#     def patch(self):
-#         try:
-#             if not db['users'].find_one({ '_id' : get_jwt_identity() }):
-#                 return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
+    @login_required
+    def post(self):
+        try:
+            if not db['users'].find_one({ '_id' : g.user.get_id() }):
+                return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
             
-#             json_data = request.get_json()
-#             new_hashed_password = hash_password(json_data['newPassword'])
+            json_data = request.get_json()
+            new_hashed_password = hash_password(json_data['newPassword'])
 
-#             db['users'].find_one_and_update(
-#                 { '_id' : get_jwt_identity() },
-#                 {
-#                     '$set' : { 'password' : new_hashed_password }
-#                 }
-#             )
+            db['users'].find_one_and_update(
+                { '_id' : { '_id' : g.user.get_id() } },
+                {
+                    '$set' : { 'password' : new_hashed_password }
+                }
+            )
             
-#             return {
-#                 'status' : 'Profile successfully updated'
-#             }, HTTPStatus.OK
+            return redirect(os.environ['BASE_URL']+'/signout', HTTPStatus.FOUND)
 
-#         except Exception as e:
-#             return {'error': e}, HTTPStatus.BAD_REQUEST
+        except Exception as e:
+            return {'error': e}, HTTPStatus.BAD_REQUEST
