@@ -5,7 +5,7 @@ from flask_login import current_user
 import os
 from dotenv import load_dotenv
 
-from config import DevelopmentConfig
+from config import Config, DevelopmentConfig, ProductionConfig
 from extensions import login_manager, cors
 
 from resources.token_resources import TokenResource, RevokeResource
@@ -20,7 +20,11 @@ def create_app():
 
     if os.environ['ENV'] == 'dev':
         app.config.from_object(DevelopmentConfig)
-    
+    elif os.environ['ENV'] == 'prod':
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(Config)
+
     register_extensions(app)
     register_resources(app)
 

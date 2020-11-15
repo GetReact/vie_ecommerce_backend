@@ -1,5 +1,4 @@
 import json
-from logging import log
 import os
 from dotenv import load_dotenv
 from flask import request

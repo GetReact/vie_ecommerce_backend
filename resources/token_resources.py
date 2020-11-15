@@ -27,7 +27,7 @@ class TokenResource(Resource): # /signin
             return { 'error' : 'email or password is incorrect' }, HTTPStatus.UNAUTHORIZED
 
         user = User(**user_json)        # {k:v for k,v in user_json.items() if k not in ['']}
-        login_user(user)
+        login_user(user, remember=True)
 
         return redirect(os.environ['BASE_URL']+'/me', HTTPStatus.SEE_OTHER)
 

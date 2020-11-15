@@ -1,4 +1,3 @@
-import json
 import os
 
 from flask import request, g, redirect
@@ -29,7 +28,6 @@ class UserCollectionResource(Resource):
             _ = User(**json_data).save()
         
             return redirect(os.environ['BASE_URL']+'/signin', HTTPStatus.PERMANENT_REDIRECT)
-            # return { 'message' : 'Successfully registered' }, HTTPStatus.OK
             
         except Exception as e:
             return { 'error': e }, HTTPStatus.BAD_REQUEST
@@ -67,9 +65,7 @@ class MeResource(Resource):
 
             db['users'].find_one_and_update(
                 { '_id' : { '_id' : g.user.get_id() } },
-                {
-                    '$set' : { 'password' : new_hashed_password }
-                }
+                { '$set' : { 'password' : new_hashed_password } }
             )
             
             return redirect(os.environ['BASE_URL']+'/signout', HTTPStatus.FOUND)
