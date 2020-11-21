@@ -1,91 +1,74 @@
-import json
+import os
 
-from flask import request, jsonify
+from flask import request, g, redirect
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import login_required
 
 from http import HTTPStatus
-import uuid
+from dotenv import load_dotenv
 
 from extensions import db
 from utils import hash_password
 
+from models.user import User
+
+load_dotenv()
+
 class UserCollectionResource(Resource):
-    def post(self): # register user
+    def post(self):
         try:
             json_data = request.get_json()
             email = json_data.get('email')
-            display_name = json_data.get('displayName')
-            password = hash_password(json_data.get('password'))
-
             if 'users' not in db.list_collection_names():
                 db.create_collection('users')
             
             if db['users'].find_one({ 'email' : email }):
-                return {'message' : 'This Email has been registered already'}, HTTPStatus.BAD_REQUEST
+                return { 'error' : 'This Email has been registered already' }, HTTPStatus.BAD_REQUEST
         
-            new_user_id = db['users'].insert_one({
-                '_id' : uuid.uuid4().hex, 
-                'displayName' : display_name,
-                'email' : email,
-                'password' : password,
-                'is_active' : True
-            }).inserted_id
+            _ = User(**json_data).save()
         
-            return {
-                'id' : new_user_id,
-                'status' : 'Successfully registered'
-            }, HTTPStatus.OK
+            return redirect(os.environ['BASE_URL']+'/signin', HTTPStatus.PERMANENT_REDIRECT)
             
         except Exception as e:
-            return {'error': e}, HTTPStatus.BAD_REQUEST
+            return { 'error': e }, HTTPStatus.BAD_REQUEST
 
 class MeResource(Resource):
-    @jwt_required
+    @login_required
     def get(self):
         try:
-            # print(get_jwt_identity())
+            print('login_required passed!')
+            user_json = db['users'].find_one({ '_id' : g.user.get_id() })
 
-            user = db['users'].find_one({ '_id' : get_jwt_identity() })
-            user_json = json.dumps(user)
-            
             if not user_json:
-                return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
-
-            # print(json.loads(user_json))
-
+                return { 'error' : 'user not found' }, HTTPStatus.NOT_FOUND
+            
             return {
-                'currentUser' : {
-                    'id' : json.loads(user_json)['_id'],
-                    'displayName' : json.loads(user_json)['displayName'],
-                    'email' : json.loads(user_json)['email'],
-                    'is_active' : json.loads(user_json)['is_active']
+                'message' : {
+                    '_id' : user_json['_id'],
+                    'displayName' : user_json['displayName'],
+                    'email' : user_json['email'],
+                    'is_active' : user_json['is_active']
                 },
-                'status' : 'verified'
             }, HTTPStatus.OK
             
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
 
-    @jwt_required
-    def patch(self):
+    @login_required
+    def post(self):
         try:
-            if not db['users'].find_one({ '_id' : get_jwt_identity() }):
+            if not db['users'].find_one({ '_id' : g.user.get_id() }):
                 return {'error' : 'user not found'}, HTTPStatus.NOT_FOUND
             
             json_data = request.get_json()
             new_hashed_password = hash_password(json_data['newPassword'])
 
             db['users'].find_one_and_update(
-                { '_id' : get_jwt_identity() },
-                {
-                    '$set' : { 'password' : new_hashed_password }
-                }
+                { '_id' : { '_id' : g.user.get_id() } },
+                { '$set' : { 'password' : new_hashed_password } }
             )
             
-            return {
-                'status' : 'Profile successfully updated'
-            }, HTTPStatus.OK
+            return redirect(os.environ['BASE_URL']+'/signout', HTTPStatus.FOUND)
 
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST
