@@ -36,9 +36,13 @@ class ShoesCollectionResource(Resource): # /shoes
         
     def get(self):
         try:
+            print('here')
+            
             doc_encryped = db['shop_data'].find_one(
                 { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
             )
+
+            print('here1')
 
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
@@ -58,7 +62,8 @@ class ShoesCollectionResource(Resource): # /shoes
                 create_shoes, 
                 doc_encryped.get('items')
             ))
-            print('here')
+
+            print('here2')
 
             return { 'message' : shoes_collection }, HTTPStatus.OK
             
