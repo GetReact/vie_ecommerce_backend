@@ -1,4 +1,5 @@
 import json
+import uuid
 import os
 from dotenv import load_dotenv
 from flask import request
@@ -18,7 +19,7 @@ class ShoesCollectionResource(Resource): # /shoes
     def post(self):
         try:
             json_data = request.get_json()
-            shoes = Shoes(**json_data)
+            shoes = Shoes(**json_data, id=str(uuid.uuid4().int))
             document_id = shoes.save()
             return {
                 'shoesCollection' : {
@@ -53,14 +54,46 @@ class ShoesCollectionResource(Resource): # /shoes
                     'condition': item.get('condition'),
                     'imageUrl': item.get('imageUrl'),
                 }
+
             shoes_collection = list(map(
                 create_shoes, 
                 doc_encryped.get('items')
             ))
 
-            # print(shoes_collection)
-
             return { 'message' : shoes_collection }, HTTPStatus.OK
+            
+        except Exception as e:
+            return {'error' : e}, HTTPStatus.BAD_REQUEST
+
+    def put(self):
+        try:
+            doc_encryped = db['shop_data'].find_one(
+                { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
+            )
+
+            if not doc_encryped:
+                return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
+
+            def create_shoes(item):
+                return {
+                    'name': item.get('name'),
+                    'seller': item.get('seller'),
+                    'price': item.get('price'),
+                    'size': item.get('size'),
+                    'condition': item.get('condition'),
+                    'imageUrl': item.get('imageUrl'),
+                }
+
+            shoes_collection = list(map(
+                create_shoes, 
+                doc_encryped.get('items')
+            ))
+
+            for item in shoes_collection:
+                shoes = Shoes(**item, id=str(uuid.uuid4().int))
+                shoes.save()
+
+            return { 'message' : 'done' }, HTTPStatus.OK
             
         except Exception as e:
             return {'error' : e}, HTTPStatus.BAD_REQUEST
@@ -68,21 +101,33 @@ class ShoesCollectionResource(Resource): # /shoes
 class ShoesResource(Resource):
     def get(self, shoes_id):
         try:
-            json_data = request.get_json()
-            doc_encryped = json.dumps(db['shop_data'].find_one(
-                { '_id' : json_data[os.environ['SHOES_MONGODB_DOCUMENT_ID']] }
-            ))
+            doc_encryped = db['shop_data'].find_one(
+                { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
+            )
 
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
 
-            shoes_collection_doc_json = json.loads(doc_encryped)
-            items = shoes_collection_doc_json['items']
+            def create_shoes(item):
+                return {
+                    'id': item.get('_id'),
+                    'name': item.get('name'),
+                    'seller': item.get('seller'),
+                    'price': item.get('price'),
+                    'size': item.get('size'),
+                    'condition': item.get('condition'),
+                    'imageUrl': item.get('imageUrl'),
+                }
+                
+            shoes_collection = list(map(
+                create_shoes, 
+                doc_encryped.get('items')
+            ))
         
-            shoes = [item for item in items if item['_id'] == shoes_id ]
+            shoes = [item for item in shoes_collection if item['id'] == shoes_id ]
 
             if shoes:
-                return { 'message' : shoes }, HTTPStatus.OK
+                return { 'message' : shoes[0] }, HTTPStatus.OK
             else:
                 return { 'error' : 'item not found' }, HTTPStatus.NOT_FOUND
         except Exception as e:
