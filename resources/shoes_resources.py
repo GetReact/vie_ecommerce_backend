@@ -36,7 +36,7 @@ class ShoesCollectionResource(Resource): # /shoes
         
     def get(self):
         try:
-            print(os.environ['SHOES_MONGODB_DOCUMENT_ID'])
+            print(os.environ['MONGODB_URI'])
             
             doc_encryped = db['shop_data'].find_one(
                 { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
