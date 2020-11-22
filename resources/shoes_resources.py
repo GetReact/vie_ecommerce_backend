@@ -14,7 +14,7 @@ from models.shoes import Shoes
 load_dotenv()
 
 class ShoesCollectionResource(Resource): # /shoes
-    @login_required
+    # @login_required
     def post(self):
         try:
             json_data = request.get_json()
@@ -36,16 +36,31 @@ class ShoesCollectionResource(Resource): # /shoes
         
     def get(self):
         try:
-            json_data = request.get_json()
-            doc_encryped = json.dumps(db['shop_data'].find_one(
-                { '_id' : json_data[os.environ['SHOES_MONGODB_DOCUMENT_ID']] }
-            ))
+            doc_encryped = db['shop_data'].find_one(
+                { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
+            )
 
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
 
-            shoes_collection_doc_json = json.loads(doc_encryped)
-            return { 'message' : shoes_collection_doc_json }, HTTPStatus.OK
+            def create_shoes(item):
+                return {
+                    'id': item.get('_id'),
+                    'name': item.get('name'),
+                    'seller': item.get('seller'),
+                    'price': item.get('price'),
+                    'size': item.get('size'),
+                    'condition': item.get('condition'),
+                    'imageUrl': item.get('imageUrl'),
+                }
+            shoes_collection = list(map(
+                create_shoes, 
+                doc_encryped.get('items')
+            ))
+
+            # print(shoes_collection)
+
+            return { 'message' : shoes_collection }, HTTPStatus.OK
             
         except Exception as e:
             return {'error' : e}, HTTPStatus.BAD_REQUEST
