@@ -22,8 +22,8 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    # BASE_URL = os.environ['BASE_URL']
-    # CORS_ORIGINS = os.environ['FRONTEND_URL']
+    BASE_URL = os.environ['BASE_URL']
+    CORS_ORIGINS = os.environ['FRONTEND_URL']
     RATELIMIT_HEADERS_ENABLED = True
     REMEMBER_COOKIE_DURATION = timedelta(minutes=15)
     REMEMBER_COOKIE_SECURE = True
