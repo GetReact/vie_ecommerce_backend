@@ -1,4 +1,3 @@
-import json
 import uuid
 import os
 from dotenv import load_dotenv
@@ -15,7 +14,7 @@ from models.shoes import Shoes
 load_dotenv()
 
 class ShoesCollectionResource(Resource): # /shoes
-    # @login_required
+    @login_required
     def post(self):
         try:
             json_data = request.get_json()
