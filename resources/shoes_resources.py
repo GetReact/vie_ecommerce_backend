@@ -24,7 +24,10 @@ class ShoesCollectionResource(Resource): # /shoes
                 'shoesCollection' : {
                     'id' : document_id,
                     'title' : 'shoes',
-                    'new_item' : shoes.to_json(),
+                    'new_item' : {
+                        **shoes.to_json(),
+                        'created_at': str(shoes.to_json().get('created_at')),
+                    },
                 },
             }, HTTPStatus.OK
         
