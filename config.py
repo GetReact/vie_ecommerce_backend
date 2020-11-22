@@ -8,13 +8,13 @@ class Config(object):
     DEBUG = False
     BASE_URL = os.environ['BASE_URL']
     SECRET_KEY = os.urandom(24)
-    CORS_ORIGINS = os.environ['FRONTEND_URL']
     CORS_SUPPORTS_CREDENTIALS = True
-    CORS_RESOURCES= r'/*'
+    CORS_RESOURCES = r'/*'
     REMEMBER_COOKIE_NAME = 'remember-me-token'
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    CORS_ORIGINS = 'http://localhost:3000'
     RATELIMIT_HEADERS_ENABLED = False
     REMEMBER_COOKIE_DURATION = timedelta(minutes=1)
     REMEMBER_COOKIE_SECURE = False
