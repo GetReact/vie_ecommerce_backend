@@ -36,13 +36,13 @@ class ShoesCollectionResource(Resource): # /shoes
         
     def get(self):
         try:
-            print('here')
+            print(os.environ['SHOES_MONGODB_DOCUMENT_ID'])
             
             doc_encryped = db['shop_data'].find_one(
                 { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
             )
 
-            print('here1')
+            print('found shoes_collection document')
 
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
