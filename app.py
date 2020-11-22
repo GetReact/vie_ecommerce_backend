@@ -24,6 +24,8 @@ def create_app():
         app.config.from_object(ProductionConfig)
     else:
         app.config.from_object(Config)
+    
+    print(app.config['CORS_ORIGINS'])
 
     register_extensions(app)
     register_resources(app)
