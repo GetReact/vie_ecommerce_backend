@@ -27,7 +27,7 @@ class UserCollectionResource(Resource):
         
             _ = User(**json_data).save()
         
-            return redirect(os.environ['BASE_URL']+'/signin', HTTPStatus.PERMANENT_REDIRECT)
+            return { 'message' : 'successfully registered user account!'}, HTTPStatus.OK
             
         except Exception as e:
             return { 'error': e }, HTTPStatus.BAD_REQUEST
@@ -68,7 +68,7 @@ class MeResource(Resource):
                 { '$set' : { 'password' : new_hashed_password } }
             )
             
-            return redirect(os.environ['BASE_URL']+'/signout', HTTPStatus.FOUND)
+            return {'message' : 'password updated! please sign in again!'}, HTTPStatus.OK
 
         except Exception as e:
             return {'error': e}, HTTPStatus.BAD_REQUEST

@@ -26,12 +26,16 @@ class TokenResource(Resource): # /signin
             return { 'error' : 'email or password is incorrect' }, HTTPStatus.UNAUTHORIZED
 
         user = User(**user_json)        # {k:v for k,v in user_json.items() if k not in ['']}
-        print(login_user(user))
+        login_user(user)
 
-        resp = make_response(redirect(os.environ['BASE_URL']+'/me', HTTPStatus.SEE_OTHER))
-        print(resp.headers)
-
-        return resp
+        return {
+            'message' : {
+                '_id' : user_json['_id'],
+                'displayName' : user_json['displayName'],
+                'email' : user_json['email'],
+                'is_active' : user_json['is_active']
+            },
+        }, HTTPStatus.OK
 
 class RevokeResource(Resource): # /signout
     @login_required
