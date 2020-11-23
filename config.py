@@ -10,7 +10,10 @@ class Config(object):
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_RESOURCES = r'/*'
     BASE_URL = os.environ['BASE_URL']
-    CORS_ORIGINS = os.environ['FRONTEND_URL']
+    CORS_ORIGINS = [
+        os.environ['FRONTEND_URL'],
+        'http://localhost:3000',
+    ]
     REMEMBER_COOKIE_NAME = 'remember-me-token'
 
 class DevelopmentConfig(Config):
