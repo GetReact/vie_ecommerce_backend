@@ -7,13 +7,15 @@ load_dotenv()
 class Config(object):
     DEBUG = False
     SECRET_KEY = os.urandom(24)
+    SESSION_COOKIE_HTTPONLY = True
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_RESOURCES = r'/*'
     BASE_URL = os.environ['BASE_URL']
     CORS_ORIGINS = [
         os.environ['FRONTEND_URL'],
-        'http://localhost:3000',
+        os.environ['FRONTEND_URL_DEV']
     ]
+    SESSION_COOKIE_NAME = 'session-token'
     REMEMBER_COOKIE_NAME = 'remember-me-token'
 
 class DevelopmentConfig(Config):
@@ -22,6 +24,8 @@ class DevelopmentConfig(Config):
     REMEMBER_COOKIE_DURATION = timedelta(minutes=1)
     REMEMBER_COOKIE_SECURE = False
     REMEMBER_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -29,3 +33,5 @@ class ProductionConfig(Config):
     REMEMBER_COOKIE_DURATION = timedelta(minutes=15)
     REMEMBER_COOKIE_SECURE = True
     REMEMBER_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True

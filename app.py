@@ -25,7 +25,7 @@ def create_app():
     else:
         app.config.from_object(Config)
     
-    print(app.config['CORS_ORIGINS'])
+    print(app.config['SESSION_COOKIE_SECURE'])
 
     register_extensions(app)
     register_resources(app)
