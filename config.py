@@ -15,7 +15,6 @@ class Config(object):
         os.environ['FRONTEND_URL'],
         os.environ['FRONTEND_URL_DEV']
     ]
-    SESSION_COOKIE_NAME = 'session-token'
 
 class DevelopmentConfig(Config):
     DEBUG = True
