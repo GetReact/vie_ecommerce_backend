@@ -16,22 +16,15 @@ class Config(object):
         os.environ['FRONTEND_URL_DEV']
     ]
     SESSION_COOKIE_NAME = 'session-token'
-    REMEMBER_COOKIE_NAME = 'remember-me-token'
 
 class DevelopmentConfig(Config):
     DEBUG = True
     RATELIMIT_HEADERS_ENABLED = False
-    REMEMBER_COOKIE_DURATION = timedelta(minutes=1)
-    REMEMBER_COOKIE_SECURE = False
-    REMEMBER_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False
 
 class ProductionConfig(Config):
     DEBUG = False
     RATELIMIT_HEADERS_ENABLED = True
-    REMEMBER_COOKIE_DURATION = timedelta(minutes=15)
-    REMEMBER_COOKIE_SECURE = True
-    REMEMBER_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
