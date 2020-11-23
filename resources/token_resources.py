@@ -1,8 +1,7 @@
-from json import load
 import os
 
 from flask_restful import Resource
-from flask import request, redirect
+from flask import request, redirect, make_response
 from flask_login import login_user, logout_user, login_required
 
 from http import HTTPStatus
@@ -27,9 +26,12 @@ class TokenResource(Resource): # /signin
             return { 'error' : 'email or password is incorrect' }, HTTPStatus.UNAUTHORIZED
 
         user = User(**user_json)        # {k:v for k,v in user_json.items() if k not in ['']}
-        login_user(user)
+        print(login_user(user))
 
-        return redirect(os.environ['BASE_URL']+'/me', HTTPStatus.SEE_OTHER)
+        resp = make_response(redirect(os.environ['BASE_URL']+'/me', HTTPStatus.SEE_OTHER))
+        print(resp.headers)
+
+        return resp
 
 class RevokeResource(Resource): # /signout
     @login_required
