@@ -1,10 +1,10 @@
 from flask import request
 from flask_restful import Resource
-from flask_login import login_required
 
 from http import HTTPStatus
 
 from extensions import stripe
+from auth_decorators import login_required
 
 class StripeResource(Resource): # /payment
     @login_required

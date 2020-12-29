@@ -16,8 +16,8 @@ class Shoes:
         self.__id = id
         self.__name = name
         self.__seller = seller
-        self.__price = price
-        self.__size = size
+        self.__price = float(price)
+        self.__size = int(size)
         self.__condition = condition
         self.__imageUrl = imageUrl
         self.__created_at = created_at
@@ -31,7 +31,7 @@ class Shoes:
 
     def to_json(self):
         return {
-            '_id' : self.__id, 
+            'id' : self.__id, 
             'name' : self.__name,
             'seller' : self.__seller,
             'price' : self.__price,

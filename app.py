@@ -1,14 +1,12 @@
-from flask import Flask, g
+from flask import Flask
 from flask_restful import Api
-from flask_login import current_user
 
 import os
 from dotenv import load_dotenv
 
 from config import Config, DevelopmentConfig, ProductionConfig
-from extensions import login_manager, cors
+from extensions import cors
 
-from resources.token_resources import TokenResource, RevokeResource
 from resources.user_resources import UserCollectionResource, MeResource
 from resources.shoes_resources import ShoesCollectionResource, ShoesResource
 from resources.stripe_resources import StripeResource
@@ -25,30 +23,16 @@ def create_app():
     else:
         app.config.from_object(Config)
     
-    print(app.config['SESSION_COOKIE_SECURE'])
-
     register_extensions(app)
     register_resources(app)
-
-    @app.route("/")
-    def index():
-        return {"message" : "this is the home page!"}
-
-    @app.before_request
-    def before_request():
-        g.user = current_user
     
     return app
 
 def register_extensions(app):
     cors.init_app(app)
-    login_manager.init_app(app)
 
 def register_resources(app):
     api = Api(app)
-
-    api.add_resource(TokenResource, '/signin')
-    api.add_resource(RevokeResource, '/signout')
 
     api.add_resource(UserCollectionResource, '/users')
     api.add_resource(MeResource, '/me')
