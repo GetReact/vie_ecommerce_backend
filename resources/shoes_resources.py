@@ -22,8 +22,13 @@ class ShoesCollectionResource(Resource): # /shoes
             shoes_json = shoes.to_json()
             return {
                 'shoes' : {
-                    **shoes_json,
-                    'created_at': str(shoes_json['created_at']),
+                    'id': shoes_json['_id'],
+                    'name': shoes_json['name'],
+                    'seller': shoes_json['seller'],
+                    'price': shoes_json['price'],
+                    'size': shoes_json['size'],
+                    'condition': shoes_json['condition'],
+                    'imageUrl': shoes_json['imageUrl'],
                 },
             }, HTTPStatus.OK
         
@@ -35,7 +40,6 @@ class ShoesCollectionResource(Resource): # /shoes
             doc_encryped = db['shop_data'].find_one(
                 { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
             )
-
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
 
@@ -52,7 +56,7 @@ class ShoesCollectionResource(Resource): # /shoes
 
             shoes_collection = list(map(
                 create_shoes, 
-                doc_encryped.get('items')
+                doc_encryped['items']
             ))
 
             return { 'collection' : shoes_collection }, HTTPStatus.OK
@@ -66,7 +70,6 @@ class ShoesResource(Resource):
             doc_encryped = db['shop_data'].find_one(
                 { '_id' : os.environ['SHOES_MONGODB_DOCUMENT_ID'] }
             )
-
             if not doc_encryped:
                 return { 'error' : 'not found in database' }, HTTPStatus.NOT_FOUND
 

@@ -31,7 +31,7 @@ class Shoes:
 
     def to_json(self):
         return {
-            'id' : self.__id, 
+            '_id' : self.__id, 
             'name' : self.__name,
             'seller' : self.__seller,
             'price' : self.__price,
