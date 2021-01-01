@@ -1,6 +1,7 @@
 from flask_cors import CORS
 
 import os
+import json
 from dotenv import load_dotenv
 
 from pymongo import MongoClient
@@ -17,5 +18,5 @@ cors = CORS()
 
 stripe.api_key = os.environ['STRIPE_SECRET_KEY']
 
-cred = credentials.Certificate('secure/firebase-admin.json')
+cred = credentials.Certificate(json.loads(os.environ['FIREBASE_CONFIG']))
 firebase_admin.initialize_app(cred)

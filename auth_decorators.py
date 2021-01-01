@@ -47,6 +47,8 @@ def login_required(view):
         except Exception as e:
             return { 'error': e }, HTTPStatus.BAD_REQUEST
 
+        print(payload)
+
         user = db['users'].find_one({ '_id' : payload['user_id'] })
 
         if user:

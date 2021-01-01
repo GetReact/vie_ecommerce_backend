@@ -29,7 +29,8 @@ class MeResource(Resource):
     @login_required
     def get(self):
         try:
-            user = request.user
+            user = User(**request.user)
+
             return { 'user' : {
                 **user.to_json(),
                 'created_at': str(user.to_json()['created_at'])
